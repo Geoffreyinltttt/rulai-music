@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>佛曲播放器</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a365d, #1e1b4b, #0a0a0a);
+            min-height: 100vh;
+        }
+
+        .lyrics-section {
+            margin-top: 16px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+            scroll-behavior: smooth;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+        }
+
+        .lyric-line {
+            margin: 8px 0;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 進度條樣式 */
+        .progress-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(to right, rgb(59, 130, 246), rgb(147, 51, 234));
+        }
+
+        /* 播放按鈕樣式 */
+        .play-button {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+        }
+
+        /* 前進/後退按鈕樣式 */
+        #forwardBtn, #backwardBtn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #forwardBtn:hover, #backwardBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 歌曲列表樣式 */
+        .song-list {
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .song-item.active {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .song-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .song-title {
+            color: white;
+            font-weight: 500;
+        }
+
+        .header {
+            background: white;
+            padding: 12px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .title-container {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 20px;
+            margin: 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        /* 指示燈效果 */
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #3b82f6; }
+            50% { box-shadow: 0 0 20px #3b82f6; }
+            100% { box-shadow: 0 0 5px #3b82f6; }
+        }
+
+        .now-playing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            margin-right: 10px;
+            animation: glow 2s infinite;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .lyrics-section {
+                margin-top: 12px;
+                padding: 8px;
+            }
+
+            .song-item {
+                padding: 8px;
+            }
+
+            .song-thumbnail {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .playlist-button {
+    position: relative;
+    z-index: 250; /* 確保按鈕在列表之上 */
+    background: none;
+    border: none;
+    color: #2c3e50;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.playlist-button:hover, .playlist-button.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+    /* 歌曲列表默認隱藏但在JS控制可見性，不用display:none */
+    .song-list {
+    position: fixed;
+    top: 60px;
+    right: -300px; /* 初始位置在屏幕外 */
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 200;
+    background: rgba(23, 25, 35, 0.95);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: right 0.3s ease; /* 只使用右側位置做轉換 */
+}
+
+.song-list.visible {
+    right: 20px; /* 顯示時移動到可見區域 */
+}
+
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-blue-950 via-gray-900 to-black">
+    <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/20 via-purple-900/20 to-transparent pointer-events-none"></div>
+    
+    <div class="header">
+      <div class="header-content">
+        <div class="title-container">
+          <h1 class="title">佛曲播放器</h1>
+        </div>
+        <div class="button-group">
+          <button id="playlistBtn" class="playlist-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="backdrop-blur-xl bg-gray-900/60 rounded-2xl p-6 shadow-2xl">
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row gap-8 mb-8">
+                <!-- Cover Image -->
+                <div class="w-full md:w-64 h-64 shrink-0 relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                    <img id="coverImage" src="" alt="歌曲封面" class="w-full h-full object-cover rounded-lg shadow-2xl relative">
+                </div>
+
+                <!-- Player Controls -->
+                <div class="flex flex-col justify-between flex-grow">
+                    <div>
+                        <span class="text-sm font-medium text-blue-600">佛曲</span>
+                        <h1 id="currentSongTitle" class="text-3xl font-bold mt-1 mb-2 text-white">選擇一首歌曲開始播放</h1>
+                    </div>
+
+                    <!-- Audio Player -->
+                    <audio class="hidden" id="audioPlayer">
+                        <source src="" type="audio/mpeg">
+                    </audio>
+
+                    <div class="space-y-6">
+                        <!-- Progress Bar -->
+                        <div class="space-y-2">
+                            <div class="w-full bg-gray-700 rounded-full h-1 cursor-pointer" id="progressContainer">
+                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Playback Controls -->
+                        <div class="flex items-center justify-center gap-4">
+                            <button class="text-gray-400 hover:text-white transition-colors" id="backwardBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+                            </button>
+                            <button id="playBtn" class="play-button flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-icon hidden"><line x1="6" y1="4" x2="6" y2="20"></line><line x1="18" y1="4" x2="18" y2="20"></line></svg>
+                            </button>
+                            <button class="text-gray-400 hover:text-white transition-colors" id="forwardBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Song List -->
+            <div class="song-list" id="songList">
+                <!-- 歌曲列表將通過JavaScript動態生成 -->
+            </div>
+
+            <!-- Lyrics Section -->
+            <div class="lyrics-section mt-6" id="lyricsSection">
+                <div class="text-center text-gray-500">選擇一首歌曲來顯示歌詞</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const backwardBtn = document.getElementById('backwardBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.getElementById('progressContainer');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
+        const coverImage = document.getElementById('coverImage');
+        const currentSongTitle = document.getElementById('currentSongTitle');
+        const songList = document.getElementById('songList');
+        const lyricsSection = document.getElementById('lyricsSection');
+        const playIcon = playBtn.querySelector('.play-icon');
+        const pauseIcon = playBtn.querySelector('.pause-icon');
+        const playlistBtn = document.getElementById('playlistBtn');
+        
+        // 當前播放歌曲索引
+        let currentSongIndex = -1;
+        
+        // 歌曲數據
+        const songsData = [
+            {
+                title: "妙禪師父 還君明珠",
+                url: "https://cdn2.rulai.org/static/song/01.mp3",
+                lyrics: `摘下一朵花　付囑我心上
+誰在殷殷的盼望？
+慈悲心　智慧光　朝夕不相忘！
+清淨　安定　真愛　箇中藏
+
+千帆終需盡　輪迴千萬劫
+師父引領我　歸航
+靈性啊 　回故鄉　永恆的嚮往
+明珠重現　耀十方！
+
+一步一步呵護　一聲一聲叮囑
+明師恩重　如父母！
+揮別業海迷途　卸下執著包袱
+今生今世不辜負！
+
+正法眼藏
+如來本自俱足　不心慌！
+千秋萬世　佛子共心唱
+明師護祐　我們要回家！
+心燈已點亮
+大願大行　永不再流浪！
+悲智願行　佛子滿天下
+花開見佛的　願望！
+
+千帆終需盡　輪迴千萬劫
+師父引領我　歸航！
+靈性啊　回故鄉　永恆的嚮往
+明珠重現　耀十方！
+
+人間漫漫長路　若非　明師救贖
+靈性何處覓歸途?
+全心依教奉行　以假證真開悟
+有身皆苦不空渡！
+
+正法眼藏
+如來本自俱足　不心慌！
+千秋萬世　佛子共心唱
+明師護祐　我們要回家！
+心燈已點亮
+大願大行　永不再流浪！
+悲智願行　佛子滿天下
+花開見佛的　願望！
+
+正法眼藏
+如來本自俱足　不心慌！
+千秋萬世　佛子共心唱
+明師護祐　我們要回家！
+心燈已點亮
+大願大行　永不再流浪！
+燈燈相續　佛子滿天下
+還君明珠的願望！
+
+末法眾生苦　妙禪住世渡
+佛子滿天下　聖花佛果實`,
+                image: "https://www.rulai.org/resource/song/images/song01ID.jpg"
+            },
+            {
+                title: "頌如來",
+                url: "https://cdn2.rulai.org/static/song/03.mp3",
+                lyrics: `終於卸下沉重的心防
+終於跨越傲慢的高牆
+終於知道了生命的真相
+終於了解您是人間的妙方
+
+這條路不管多漫長
+跟著您就會有方向
+我堅持要在您帶領的中道上
+才不枉費今生這一趟
+
+感謝您給我向前的力量
+從此我的人生就不一樣
+恩怨情仇不再是阻擋
+妙不可言大威德力
+療癒我累世的傷
+
+禪行路上從此不再徬徨
+您慈悲帶我飛越過無常
+如如不動的太陽
+照破世間的黑暗 (照破娑婆的黑暗)
+來帶領我回到究竟故鄉 (來成就弟子們的願望)`,
+                image: "https://www.rulai.org/resource/song/images/song03ID.jpg"
+            },
+            {
+                title: "感恩 師父！讚歎 師父！",
+                url: "https://cdn2.rulai.org/static/song/04.mp3",
+                lyrics: `感恩 師父！讚歎 師父！
+是您帶我走出生命幽谷
+讓我不再陷入迷霧 可以找到回家的路
+
+感恩 師父！讚歎 師父！
+是您讓我不再感到孤獨
+無論身在何處 都有您慈悲的保護
+
+感恩 師父！讚歎 師父！
+是您感化我心 依教奉行
+
+感恩 師父！讚歎 師父！
+是您渡化洗淨百千萬劫的苦
+
+感恩 師父！讚歎 師父！
+是您感化我心 與 師同行
+
+感恩 師父！讚歎 師父！
+聖花佛果實灑滿大地 化為淨土
+
+禮敬合十 感恩 師父！讚歎 師父！`,
+                image: "https://www.rulai.org/resource/song/images/song04ID.jpg"
+            },
+            {
+                title: "引領覺悟",
+                url: "https://cdn2.rulai.org/static/song/05.mp3",
+                lyrics: `孤單甘是無人來作伴
+心痛甘是生活來拖磨
+驚惶甘是人生路上無塊援
+無奈甘是無人了解我
+
+師父說：孤單只是心袂定
+心痛只是找無路通走
+驚惶只是毋知人生為著啥
+其實咱攏是乎業騙毋驚
+
+過去我為生活闖甲暈車車
+也為愛 情歌唱甲心攏破
+但是 師父時常慈悲提醒我
+叫我毋通浪費人身生命放乎業來拖
+
+人說今世會按怎 在前世就注定
+師父講哪依教奉行 會跳脫運命
+感恩 師父修行路上 用心的教化
+乎我早日解脫累世的牽拖
+
+師父啊 您的話 我攏有聽
+聽您講開悟境界 是高低定輸贏
+師父啊 感恩您沒放棄我
+乎我機會 見著本來的我
+
+師父啊 您的話 我攏有聽
+我會全然來交付勇敢向前走
+師父啊 感恩您沒放棄我
+因為我知 阮攏是您的 寶貝心肝`,
+                image: "https://www.rulai.org/resource/song/images/song05ID.jpg"
+            },
+            {
+                title: "我問",
+                url: "https://cdn2.rulai.org/static/song/06.mp3",
+                lyrics: `以為沉睡夢魘就能擺脫
+以為獲得什麼就能快樂
+以為 天真的以為
+守著承諾 夢就能開花結果
+
+以為長大就會變得成熟
+以為付出就會獲得愈多
+以為 天真的以為
+只要努力 生命會充滿奇蹟
+
+我問星辰 我問天空
+我問雨後的彩虹
+為什麼煩惱那麼多
+像個轉動不停的陀螺
+
+我問星辰 我問天空
+我問雨後的彩虹
+為什麼欲望無止盡
+只要呼吸就不曾停息
+身不由己 斷了又升起
+無法隨心所欲
+任由思緒擺佈自己
+
+所有問題就像天空烏雲
+如影隨形揮之不去
+凝視微風吹過平靜湖水
+一圈一圈漾起漣漪
+
+我問 師父 慈悲的 師父
+我問明師 妙禪師父
+浮生若夢匆匆過客
+如何看透悲歡離合
+
+我問 師父 慈悲的 師父
+我問明師 妙禪師父
+身陷紅塵凡夫俗子
+如何讓心裡清清楚楚
+
+虔誠合十 聆聽 師父開示
+用心禪修禪行
+終於我的心 在迷悟中清醒
+終於我的心 心安心定`,
+                image: "https://www.rulai.org/resource/song/images/song06ID.jpg"
+            },
+            {
+                title: "All Rise Together 與 妙禪師父同心同行登佛岸",
+                url: "https://cdn2.rulai.org/static/song/11.mp3",
+                lyrics: `A word to the weary
+The lone and distraught
+Though you may feel
+You're the one God forgot
+There is no reason
+To go it alone
+There is one who will carry you home
+
+所有煩惱憂苦的人們啊
+或許你覺得已被上帝遺忘
+然而祂絕不會讓你孤獨承受
+祂會帶你回家
+
+All of the aged
+The weathered with time
+You need not believe
+You have been left behind
+There comes a vessel
+With sails all unfurled
+Ready to sail from this world
+
+經過百千萬劫，歲月的痕跡
+你或許不相信
+你以為你被遺棄在旁
+大展風帆
+乘風翱翔的船
+就要接你回家
+
+We will all rise together
+Yes, we'll all rise
+Love in our eyes
+We will all rise together
+Together, we'll raise everyone
+
+我們與 妙禪師父同心同行登佛岸
+是的，我們都誓願不斷開悟
+與 妙禪師父同心同行登佛岸
+是的，我們與 妙禪師父同心同行登佛岸
+來吧！一起成就佛道 利益十方眾生
+
+All saints in waiting
+Both near and afar
+Rise and awaken
+Wherever you are
+For He is among us
+Who you've waited for
+No need to wait anymore
+
+醒醒吧！所有在等待中的眾生們！
+不管你在哪裡，都不需要再等待
+妙禪師父與我們同在
+
+We will all rise together
+Yes, we'll all rise
+Love in our eyes
+We will all rise together
+Together, we'll raise everyone
+Together, we'll raise everyone
+
+我們與 妙禪師父同心同行登佛岸
+是的，我們都誓願不斷開悟
+與 妙禪師父同心同行登佛岸
+是的，我們與 妙禪師父同心同行登佛岸
+來吧！一起成就佛道 利益十方眾生
+來吧！一起成就佛道 利益十方眾生`,
+                image: "https://www.rulai.org/resource/song/images/song07ID.jpg"
+            },
+            {
+                title: "點亮心燈‧佛心印心",
+                url: "https://cdn2.rulai.org/static/song/13_3mins.mp3",
+                lyrics: `感恩 師父點亮我們的心燈
+點亮你的心燈
+點亮他的心燈
+點亮無量的心燈
+
+感恩 師父點亮我們的心燈
+點亮你的心燈
+點亮他的心燈
+點亮無量的心燈
+
+與 師父佛心印心
+佛心印心
+佛心印心
+
+與 師父佛心印心
+佛心印心
+佛心印心
+佛心印心
+感恩 師父與我們佛心印心`,
+                image: "https://www.rulai.org/resource/song/images/song13ID.jpg"
+            },
+            {
+                title: "一世成佛",
+                url: "https://cdn2.rulai.org/static/song/14.mp3",
+                lyrics: `有誰能開啟我的智慧
+斷滅煩惱與執著
+我仍迷戀在花花的世界裡
+流離浩瀚宇宙中
+
+人身歲月剎那間消逝
+明師難遇要珍惜
+要內省要懺悔 要突破要實踐
+一世成佛 成佛
+
+感恩 妙禪師父的救贖
+妙轉渡化眾生的苦
+不再被虛幻貪戀來牽絆
+行在無量慈悲中
+
+人身歲月剎那間消逝
+明師難遇要珍惜
+要內省要懺悔 要突破要實踐
+一世成佛 成佛
+
+百千萬劫不能再回首
+人身難得這一世
+絕對要堅定全力依教奉行
+發願要一世成佛
+
+人身歲月剎那間消逝
+明師難遇要珍惜
+要內省要懺悔 要突破要實踐
+一世成佛 成佛
+
+要內省要懺悔 要突破要實踐
+一世成佛 成佛
+
+為眾生慈悲 為自己爭氣
+發願要一世成佛`,
+                image: "https://www.rulai.org/resource/song/images/song14ID.jpg"
+            },
+            {
+                title: "我願",
+                url: "https://cdn2.rulai.org/static/song/16.mp3",
+                lyrics: `我願 帶著您的慈悲 行遍每寸苦難人間
+我願 帶著您的真愛 溫暖每顆不安的心
+我願 報答您的恩澤 用我生命每分每秒
+我願 成就您的期盼 用我生命所有一切
+
+我的語言 願傳揚您慈悲恩典
+我的意念 願常住您慈愛身影
+我的法船 願實踐您悲智願行
+誓證如來真實義
+
+佛恩浩瀚無邊 大慈大悲救渡
+卑微渺小的我 實在一無所有
+
+到底要拿什麼 獻上無盡感恩
+慈悲的師父啊 請您聽我心願
+
+誓願全力以赴 將一世成佛的果
+獻給我的佛父 慈悲的 妙禪師父
+
+願正法永不斷滅
+燈燈相續
+願佛脈代代相傳
+千秋萬世`,
+                image: "https://www.rulai.org/resource/song/images/song16ID.jpg"
+            },
+            {
+                title: "心願",
+                url: "https://cdn2.rulai.org/static/song/17.mp3",
+                lyrics: `慈悲 溫暖人間
+真愛 在我心田
+祢的目光容顏 照亮了我每個黑夜
+我的世界 因為有祢終於改變
+
+仰望 藍藍的天
+陽光 從不停歇
+祢的慈愛心願 在我心中無限蔓延
+感恩有祢 我願全然交付一切
+
+流浪多遠 我們終於回到祢身邊
+每份希望 每張笑臉 都因為祢而實現
+祢的心願 我真心實踐直到永遠
+明師真愛充滿著喜樂恩典 賦予我所有一切
+
+做祢的千手千眼
+成佛利眾 是唯一誓願`,
+                image: "https://www.rulai.org/resource/song/images/song17ID.jpg"
+            },
+            {
+                title: "大願大行",
+                url: "https://cdn2.rulai.org/static/song/18.mp3",
+                lyrics: `業力推著我不斷流浪旅行
+一站又一站 穿過宇宙浩瀚無垠
+下一刻會到哪裡 自己卻不能決定
+直到有 您的引領 我才得以心安心定
+
+遙長苦難的靈性 多渴望 明師住世的禪行
+世界因 您而光明 願追隨 您大願大行
+開啟那無窮無盡的寶藏
+這一生不要只是靈性的曾經
+
+我何其有幸 有 您的引領
+您慈悲開示 要破除不能見性的習性
+既然俱足佛性 也都能了悟生命究竟
+懺悔自己 遲遲未能見性
+
+我們何其有幸 有 您慈悲叮嚀
+叮嚀著人生苦短 把握人身 依教奉行
+我們要利益眾生 所以要明心見性
+我們要一世成佛 明心見性`,
+                image: "https://www.rulai.org/resource/song/images/song18ID.jpg"
+            },
+            {
+                title: "人身難得 明師難遇",
+                url: "https://cdn2.rulai.org/static/song/19.mp3",
+                lyrics: `人身難得 是我累世祈求
+明師難遇 大慈大悲接納我
+靈性究竟還要苦難多久
+此身不要空過 此世不再蹉跎
+
+看不清的盲目 帶不走的追逐
+業海迷途 沉沉浮浮
+明師大威德力 佛光照破無明
+迷途羔羊 走出昏矇執迷
+不捨眾生 明師永不放棄
+
+珍惜人身 稍縱即逝不停留
+珍惜明師 決心追隨無保留
+深深懺悔 假我何來執著
+黑暗化作光明 與 師佛心印心
+
+是是非非交付 對對錯錯臣服
+明師掌舵 見性的路
+貪嗔癡慢交付 大信 妙禪師父
+渡化我百千萬劫無明苦
+
+是是非非交付 對對錯錯臣服
+明師掌舵 見性的路
+順逆一如交付 大信 妙禪師父
+共心同登 明師無上法船
+明心見性 彼岸就是此岸`,
+                image: "https://www.rulai.org/resource/song/images/song19ID.jpg"
+            },
+            {
+                title: "行者之歌",
+                url: "https://cdn2.rulai.org/static/song/22.mp3",
+                lyrics: `百千萬劫的流浪
+已經忘了回家的渴望
+苦難沉淪早已了無希望
+祈求救贖的光芒
+
+師父慈悲的目光
+望向我身在黑暗的地方
+雖然我帶著汙濁滿身傷
+師父接納我這模樣
+
+師父您給的我不會忘
+感恩 師父一路都在我身旁
+給我愛的力量 不再害怕無常
+師父引領我在中道上
+帶我回永恆的故鄉
+
+感恩 師父您慈悲點亮
+我要明心見性的願望
+心心念念要我依教奉行
+明心見性就在當下
+
+師父您給的我不會忘
+感恩 師父一路都在我身旁
+師父您是我的主啊
+明心見性是我唯一方向
+
+師父給的我絕不會忘
+感恩 師父一路都在我身旁
+給我愛的力量 不再害怕無常
+心安心定追隨您 明心見性利益十方
+團結共心行在中道上
+追隨 師父回家`,
+                image: "https://www.rulai.org/resource/song/images/song22ID.jpg"
+            },
+            {
+                title: "妙禪如來 佛恩浩蕩",
+                url: "https://cdn2.rulai.org/static/song/23.mp3",
+                lyrics: `感恩祢的慈悲
+流下不捨眼淚
+妙轉眾生的苦難深淵
+慈悲住世在人間
+
+正法傳聖基奠
+浩蕩佛恩永難滅
+歷盡艱辛的弘法歲月
+留下永世的恩典
+
+妙禪如來的願
+弘揚在人世間
+聞聲救苦於末法世界
+眾生皆感恩萬千
+
+前世與佛有緣
+今生才與祢相約
+還君明珠的慈悲心願
+燈燈相續到永遠
+
+紅塵苦海無邊
+泛起情仇恩怨
+五濁裡 多艱苦 多難言
+
+一燈明千古夜
+佛恩臨苦厄遠
+扭末法 渡業海 千萬劫
+
+明師的慈與悲 傳揚在人間
+圓滿娑婆世界的祈願
+
+叩首於佛恩前 利眾行深間
+聖花佛果如來現`,
+                image: "https://www.rulai.org/resource/song/images/song23ID.jpg"
+            }
+        ];
+
+        // 生成歌曲列表
+        function renderSongList() {
+            songList.innerHTML = '';
+            songsData.forEach((song, index) => {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                songItem.setAttribute('data-index', index);
+                
+                // 如果是當前播放歌曲，添加active類
+                if (index === currentSongIndex) {
+                    songItem.classList.add('active');
+                }
+                
+                songItem.innerHTML = `
+                    <img src="${song.image}" alt="${song.title}" class="song-thumbnail">
+                    <div class="song-info">
+                        <div class="song-title">${index === currentSongIndex ? `<span class="now-playing-indicator"></span>` : ''}${song.title}</div>
+                    </div>
+                `;
+                
+                songItem.addEventListener('click', () => {
+                    playSong(index);
+                });
+                
+                songList.appendChild(songItem);
+            });
+        }
+        
+        // 播放指定索引的歌曲
+        function playSong(index) {
+            if (index === currentSongIndex && !audioPlayer.paused) {
+                // 如果點擊的是當前播放歌曲，暫停播放
+                audioPlayer.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                return;
+            }
+            
+            currentSongIndex = index;
+            const song = songsData[index];
+            
+            // 更新音頻源
+            audioPlayer.src = song.url;
+            
+            // 更新封面和標題
+            coverImage.src = song.image;
+            currentSongTitle.textContent = song.title;
+            
+            // 更新歌詞
+            displayLyrics(song.lyrics);
+            
+            // 播放音頻
+            audioPlayer.play()
+                .then(() => {
+                    // 播放成功
+                    console.log('播放成功');
+                })
+                .catch(error => {
+                    // 播放失敗，可能是因為用戶還沒有與頁面互動
+                    console.error('播放失敗:', error);
+                    alert('請先點擊頁面，然後再嘗試播放。');
+                });
+            
+            // 更新播放按鈕狀態
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            
+            // 更新歌曲列表，高亮當前播放的歌曲
+            renderSongList();
+        }
+        
+        // 顯示歌詞
+        function displayLyrics(lyrics) {
+            lyricsSection.innerHTML = '';
+            
+            // 按行分割歌詞
+            const lines = lyrics.split('\n');
+            
+            lines.forEach(line => {
+                if (line.trim()) {
+                    const lyricLine = document.createElement('div');
+                    lyricLine.className = 'lyric-line';
+                    lyricLine.textContent = line;
+                    lyricsSection.appendChild(lyricLine);
+                } else {
+                    // 對於空行，添加更大的間距
+                    const spacer = document.createElement('div');
+                    spacer.style.height = '15px';
+                    lyricsSection.appendChild(spacer);
+                }
+            });
+        }
+        
+        // 播放/暫停控制
+        playBtn.addEventListener('click', () => {
+            if (currentSongIndex === -1) {
+                // 如果尚未選擇歌曲，播放第一首
+                playSong(0);
+            } else if (audioPlayer.paused) {
+                audioPlayer.play()
+                    .then(() => {
+                        // 播放成功
+                        playIcon.classList.add('hidden');
+                        pauseIcon.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        // 播放失敗
+                        console.error('播放失敗:', error);
+                        alert('請先點擊頁面，然後再嘗試播放。');
+                    });
+            } else {
+                audioPlayer.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        });
+        
+        // 前進/後退控制
+        backwardBtn.addEventListener('click', () => {
+            if (currentSongIndex > 0) {
+                playSong(currentSongIndex - 1);
+            } else {
+                // 如果是第一首，則播放最後一首
+                playSong(songsData.length - 1);
+            }
+        });
+        
+        forwardBtn.addEventListener('click', () => {
+            if (currentSongIndex < songsData.length - 1) {
+                playSong(currentSongIndex + 1);
+            } else {
+                // 如果是最後一首，則播放第一首
+                playSong(0);
+            }
+        });
+        
+        // 更新進度條
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (!isNaN(audioPlayer.duration)) {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+            }
+        });
+        
+        // 加載歌曲持續時間
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationDisplay.textContent = formatTime(audioPlayer.duration);
+        });
+        
+           
+        // 格式化時間
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 點擊進度條跳轉
+        progressContainer.addEventListener('click', (e) => {
+            if (currentSongIndex === -1) return; // 如果沒有正在播放的歌曲，不做任何操作
+            
+            const rect = progressContainer.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = pos * audioPlayer.duration;
+        });
+
+        // 播放列表顯示/隱藏
+        playlistBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止點擊事件擴散到文檔
+            songList.classList.toggle('visible'); // 切換顯示/隱藏歌曲列表
+            console.log('播放列表按鈕被點擊，當前可見狀態:', songList.classList.contains('visible'));
+        });
+
+        // 點擊歌曲列表本身不會關閉它
+        songList.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止點擊事件擴散到文檔
+        });
+
+        // 點擊其他地方會關閉歌曲列表
+        document.addEventListener('click', function() {
+            songList.classList.remove('visible'); // 隱藏歌曲列表
+        });
+        
+        // 音頻錯誤處理
+        audioPlayer.addEventListener('error', (e) => {
+            console.error('音頻播放錯誤:', e);
+            alert('音頻播放錯誤，請稍後再試。');
+        });
+        
+        // 初始化
+        renderSongList();
+        
+        // 載入預設歌曲（第一首）但不播放
+function loadDefaultSong() {
+    if (songsData.length > 0) {
+        currentSongIndex = 0;
+        const song = songsData[0];
+        
+        // 更新音頻源
+        audioPlayer.src = song.url;
+        
+        // 更新封面和標題
+        coverImage.src = song.image;
+        currentSongTitle.textContent = song.title;
+        
+        // 更新歌詞
+        displayLyrics(song.lyrics);
+        
+        // 預加載音頻
+        audioPlayer.load();
+        
+        // 更新歌曲列表，高亮當前選擇的歌曲
+        renderSongList();
+        
+
+    }
+}
+        
+        // 頁面加載完成後載入預設歌曲
+        window.addEventListener('load', loadDefaultSong);
+        
+        // 調整歌詞區域的高度以確保在小螢幕上可見
+        function adjustLyricsSectionHeight() {
+            const viewportHeight = window.innerHeight;
+            const headerHeight = document.querySelector('.header').offsetHeight;
+            const playerHeight = document.querySelector('.backdrop-blur-xl').offsetHeight - lyricsSection.offsetHeight;
+            const padding = 40; // 額外的padding
+            
+            const maxHeight = viewportHeight - headerHeight - playerHeight - padding;
+            lyricsSection.style.maxHeight = `${maxHeight}px`;
+        }
+        
+        // 頁面加載和調整大小時調整歌詞區域高度
+        window.addEventListener('load', adjustLyricsSectionHeight);
+        window.addEventListener('resize', adjustLyricsSectionHeight);
+        
+        // 檢查是否支持媒體會話API，如果支持則使用它來控制媒體
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', function() {
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                    playIcon.classList.add('hidden');
+                    pauseIcon.classList.remove('hidden');
+                }
+            });
+            
+            navigator.mediaSession.setActionHandler('pause', function() {
+                if (!audioPlayer.paused) {
+                    audioPlayer.pause();
+                    playIcon.classList.remove('hidden');
+                    pauseIcon.classList.add('hidden');
+                }
+            });
+            
+            navigator.mediaSession.setActionHandler('previoustrack', function() {
+                if (currentSongIndex > 0) {
+                    playSong(currentSongIndex - 1);
+                } else {
+                    playSong(songsData.length - 1);
+                }
+            });
+            
+            navigator.mediaSession.setActionHandler('nexttrack', function() {
+                if (currentSongIndex < songsData.length - 1) {
+                    playSong(currentSongIndex + 1);
+                } else {
+                    playSong(0);
+                }
+            });
+        }
+        
+        // 防止在移動設備上點擊按鈕時出現延遲
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function() {}, {passive: true});
+        });
+        
+        // 添加鍵盤快捷鍵支持
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { // 空格鍵暫停/播放
+                e.preventDefault();
+                playBtn.click();
+            } else if (e.code === 'ArrowLeft') { // 左箭頭鍵上一首
+                backwardBtn.click();
+            } else if (e.code === 'ArrowRight') { // 右箭頭鍵下一首
+                forwardBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
