@@ -18,25 +18,25 @@
             min-height: 100vh;
         }
 
-        /* 修改 lyrics-section 類的 CSS: */
+        /* lyrics-section */
 .lyrics-section {
-    margin-top: 16px;
-    padding: 20px; /* 增加內邊距 */
-    overflow-y: auto;
-    max-height: 60vh; /* 從原來的固定高度改為視窗高度的百分比 */
-    min-height: 300px; /* 設置最小高度 */
-    scroll-behavior: smooth;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    font-size: 1.1rem; /* 稍微增大字體 */
-    line-height: 1.8; /* 增加行間距 */
+    		margin-top: 16px;
+    		padding: 20px; 
+    		overflow-y: auto;
+    		max-height: 60vh; 
+    		min-height: 300px; 
+   			scroll-behavior: smooth;
+    		background: rgba(255, 255, 255, 0.95);
+    		border-radius: 12px;
+    		font-size: 1.1rem;
+    		line-height: 1.8; 
 }
 
-/* 修改歌詞行的樣式 */
+/*歌詞行的樣式 */
 .lyric-line {
-    margin: 10px 0; /* 增加上下間距 */
-    font-size: 1.1rem;
-    line-height: 1.8;
+   			 margin: 10px 0; 
+   			 font-size: 1.1rem;
+ 			   line-height: 1.8;
 }
 
         /* 進度條樣式 */
@@ -60,24 +60,24 @@
 
         /* 前進/後退按鈕樣式 */
         #forwardBtn, #backwardBtn {
-    width: 40px;
-    height: 40px;
-    display: flex !important; /* 強制顯示 */
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    z-index: 20; /* 確保按鈕在前景 */
+    		width: 40px;
+   		 	height: 40px;
+    		display: flex !important; 
+   			align-items: center;
+    		justify-content: center;
+    		border-radius: 50%;
+    		background: rgba(255, 255, 255, 0.1);
+    		transition: all 0.3s ease;
+    		z-index: 20;
 }
 
 .playback-controls {
-    position: relative;
-    z-index: 25;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+    		position: relative;
+    		z-index: 25;
+    		display: flex !important;
+    		align-items: center;
+    		justify-content: center;
+   			gap: 1rem;
 }
 
         #forwardBtn:hover, #backwardBtn:hover {
@@ -161,19 +161,19 @@
         }
 
         .now-playing-indicator {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #60a5fa;
-    margin-right: 12px;
-    animation: glow 1.5s infinite;
+   			display: inline-block;
+    		width: 12px;
+    		height: 12px;
+    		border-radius: 50%;
+    		background-color: #60a5fa;
+    		margin-right: 12px;
+    		animation: glow 1.5s infinite;
 }
 
 @keyframes glow {
-    0% { box-shadow: 0 0 5px #60a5fa; }
-    50% { box-shadow: 0 0 20px #60a5fa; }
-    100% { box-shadow: 0 0 5px #60a5fa; }
+    		0% { box-shadow: 0 0 5px #60a5fa; }
+    		50% { box-shadow: 0 0 20px #60a5fa; }
+    		100% { box-shadow: 0 0 5px #60a5fa; }
 }
 
         /* 響應式設計 */
@@ -198,35 +198,34 @@
                 height: 40px;
             }
         }
-    .button-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
+    		.button-group {
+      			display: flex;
+      			gap: 10px;
+      			align-items: center;
+    		}
 
-    .playlist-button {
-    position: relative;
-    z-index: 250; /* 確保按鈕在列表之上 */
-    background: none;
-    border: none;
-    color: #2c3e50;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+    	.playlist-button {
+    		position: relative;
+    		z-index: 250;
+   		 background: none;
+    		border: none;
+    		color: #8b5cf6; 
+    		font-size: 20px;
+   			cursor: pointer;
+    		padding: 8px;
+    		border-radius: 50%;
+    		transition: all 0.2s ease;
 }
 
 .playlist-button:hover, .playlist-button.active {
-    background-color: rgba(0, 0, 0, 0.1);
-    transform: scale(1.1);
+   			 background-color: rgba(139, 92, 246, 0.1);
+    		 transform: scale(1.1);
 }
-
     /* 歌曲列表默認隱藏但在JS控制可見性，不用display:none */
     .song-list {
     position: fixed;
     top: 60px;
-    right: -300px; /* 初始位置在屏幕外 */
+    right: -300px; 
     width: 300px;
     max-height: 80vh;
     overflow-y: auto;
@@ -235,30 +234,86 @@
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    transition: right 0.3s ease; /* 只使用右側位置做轉換 */
+    transition: right 0.3s ease; 
 }
 
 .song-list.visible {
-    right: 20px; /* 顯示時移動到可見區域 */
+    right: 20px; 
 }
 
+.header-link-button {
+    position: relative;
+    z-index: 250;
+    background: none;
+    border: none;
+    color: #2c3e50;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-link-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.playlist-button:hover, 
+.playlist-button.active, 
+.header-link-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-b from-blue-950 via-gray-900 to-black">
     <div class="absolute inset-0 bg-gradient-to-tr from-blue-900/20 via-purple-900/20 to-transparent pointer-events-none"></div>
     
     <div class="header">
-      <div class="header-content">
-        <div class="title-container">
-          <h1 class="title">佛曲播放器</h1>
-        </div>
-        <div class="button-group">
-          <button id="playlistBtn" class="playlist-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
-        </div>
-      </div>
+  <div class="header-content">
+    <div class="title-container">
+      <h1 class="title">佛曲播放器</h1>
     </div>
+    <div class="button-group">
+      <a href="https://www.rulai.org/master" target="_blank" class="header-link-button" aria-label="三聖教及師父的慈悲開示">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+      </a>
+      <a href="https://www.rulai.org/weekly/63" target="_blank" class="header-link-button" aria-label="禪行週報">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </a>
+      <a href="https://www.rulai.org/testimony" target="_blank" class="header-link-button" aria-label="同修心得見證">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </a>
+      <button id="playlistBtn" class="playlist-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+</div>
 
     <div class="max-w-4xl mx-auto p-6">
         <div class="backdrop-blur-xl bg-gray-900/60 rounded-2xl p-6 shadow-2xl">
