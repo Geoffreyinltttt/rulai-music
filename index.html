@@ -18,21 +18,26 @@
             min-height: 100vh;
         }
 
-        .lyrics-section {
-            margin-top: 16px;
-            padding: 10px;
-            overflow-y: auto;
-            max-height: calc(100vh - 200px);
-            scroll-behavior: smooth;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-        }
+        /* 修改 lyrics-section 類的 CSS: */
+.lyrics-section {
+    margin-top: 16px;
+    padding: 20px; /* 增加內邊距 */
+    overflow-y: auto;
+    max-height: 60vh; /* 從原來的固定高度改為視窗高度的百分比 */
+    min-height: 300px; /* 設置最小高度 */
+    scroll-behavior: smooth;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    font-size: 1.1rem; /* 稍微增大字體 */
+    line-height: 1.8; /* 增加行間距 */
+}
 
-        .lyric-line {
-            margin: 8px 0;
-            font-size: 1rem;
-            line-height: 1.7;
-        }
+/* 修改歌詞行的樣式 */
+.lyric-line {
+    margin: 10px 0; /* 增加上下間距 */
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
 
         /* 進度條樣式 */
         .progress-bar {
@@ -55,15 +60,25 @@
 
         /* 前進/後退按鈕樣式 */
         #forwardBtn, #backwardBtn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
+    width: 40px;
+    height: 40px;
+    display: flex !important; /* 強制顯示 */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    z-index: 20; /* 確保按鈕在前景 */
+}
+
+.playback-controls {
+    position: relative;
+    z-index: 25;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
 
         #forwardBtn:hover, #backwardBtn:hover {
             background: rgba(255, 255, 255, 0.2);
@@ -146,14 +161,20 @@
         }
 
         .now-playing-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #3b82f6;
-            margin-right: 10px;
-            animation: glow 2s infinite;
-        }
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #60a5fa;
+    margin-right: 12px;
+    animation: glow 1.5s infinite;
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px #60a5fa; }
+    50% { box-shadow: 0 0 20px #60a5fa; }
+    100% { box-shadow: 0 0 5px #60a5fa; }
+}
 
         /* 響應式設計 */
         @media (max-width: 768px) {
@@ -274,19 +295,18 @@
                         </div>
 
                         <!-- Playback Controls -->
-                        <div class="flex items-center justify-center gap-4">
-                            <button class="text-gray-400 hover:text-white transition-colors" id="backwardBtn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
-                            </button>
-                            <button id="playBtn" class="play-button flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-icon hidden"><line x1="6" y1="4" x2="6" y2="20"></line><line x1="18" y1="4" x2="18" y2="20"></line></svg>
-                            </button>
-                            <button class="text-gray-400 hover:text-white transition-colors" id="forwardBtn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-                            </button>
-                        </div>
-
+<div class="flex items-center justify-center gap-4 playback-controls">
+    <button class="text-gray-400 hover:text-white transition-colors" id="backwardBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+    </button>
+    <button id="playBtn" class="play-button flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="play-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pause-icon hidden"><line x1="6" y1="4" x2="6" y2="20"></line><line x1="18" y1="4" x2="18" y2="20"></line></svg>
+    </button>
+    <button class="text-gray-400 hover:text-white transition-colors" id="forwardBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+    </button>
+</div>
                     </div>
                 </div>
             </div>
@@ -835,199 +855,198 @@ Together, we'll raise everyone
         ];
 
         // 生成歌曲列表
-        function renderSongList() {
-            songList.innerHTML = '';
-            songsData.forEach((song, index) => {
-                const songItem = document.createElement('div');
-                songItem.className = 'song-item';
-                songItem.setAttribute('data-index', index);
-                
-                // 如果是當前播放歌曲，添加active類
-                if (index === currentSongIndex) {
-                    songItem.classList.add('active');
-                }
-                
-                songItem.innerHTML = `
-                    <img src="${song.image}" alt="${song.title}" class="song-thumbnail">
-                    <div class="song-info">
-                        <div class="song-title">${index === currentSongIndex ? `<span class="now-playing-indicator"></span>` : ''}${song.title}</div>
-                    </div>
-                `;
-                
-                songItem.addEventListener('click', () => {
-                    playSong(index);
-                });
-                
-                songList.appendChild(songItem);
+function renderSongList() {
+    songList.innerHTML = '';
+    songsData.forEach((song, index) => {
+        const songItem = document.createElement('div');
+        songItem.className = 'song-item';
+        songItem.setAttribute('data-index', index);
+        
+        // 如果是當前播放歌曲，添加active類
+        if (index === currentSongIndex) {
+            songItem.classList.add('active');
+        }
+        
+        songItem.innerHTML = `
+            <img src="${song.image}" alt="${song.title}" class="song-thumbnail">
+            <div class="song-info">
+                <div class="song-title">${index === currentSongIndex ? `<span class="now-playing-indicator"></span>` : ''}${song.title}</div>
+            </div>
+        `;
+        
+        songItem.addEventListener('click', () => {
+            playSong(index);
+        });
+        
+        songList.appendChild(songItem);
+    });
+}
+
+// 播放指定索引的歌曲
+function playSong(index) {
+    if (index === currentSongIndex && !audioPlayer.paused) {
+        // 如果點擊的是當前播放歌曲，暫停播放
+        audioPlayer.pause();
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        return;
+    }
+    
+    currentSongIndex = index;
+    const song = songsData[index];
+    
+    // 更新音頻源
+    audioPlayer.src = song.url;
+    
+    // 更新封面和標題
+    coverImage.src = song.image;
+    currentSongTitle.innerHTML = `<span class="now-playing-indicator"></span> ${song.title}`;
+    
+    // 更新歌詞
+    displayLyrics(song.lyrics);
+    
+    // 播放音頻
+    audioPlayer.play()
+        .then(() => {
+            // 播放成功
+            console.log('播放成功');
+        })
+        .catch(error => {
+            // 播放失敗，可能是因為用戶還沒有與頁面互動
+            console.error('播放失敗:', error);
+            alert('請先點擊頁面，然後再嘗試播放。');
+        });
+    
+    // 更新播放按鈕狀態
+    playIcon.classList.add('hidden');
+    pauseIcon.classList.remove('hidden');
+    
+    // 更新歌曲列表，高亮當前播放的歌曲
+    renderSongList();
+}
+
+// 顯示歌詞
+function displayLyrics(lyrics) {
+    lyricsSection.innerHTML = '';
+    
+    // 按行分割歌詞
+    const lines = lyrics.split('\n');
+    
+    lines.forEach(line => {
+        if (line.trim()) {
+            const lyricLine = document.createElement('div');
+            lyricLine.className = 'lyric-line';
+            lyricLine.textContent = line;
+            lyricsSection.appendChild(lyricLine);
+        } else {
+            // 對於空行，添加更大的間距
+            const spacer = document.createElement('div');
+            spacer.style.height = '15px';
+            lyricsSection.appendChild(spacer);
+        }
+    });
+}
+
+// 播放/暫停控制
+playBtn.addEventListener('click', () => {
+    if (currentSongIndex === -1) {
+        // 如果尚未選擇歌曲，播放第一首
+        playSong(0);
+    } else if (audioPlayer.paused) {
+        audioPlayer.play()
+            .then(() => {
+                // 播放成功
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            })
+            .catch(error => {
+                // 播放失敗
+                console.error('播放失敗:', error);
+                alert('請先點擊頁面，然後再嘗試播放。');
             });
-        }
-        
-        // 播放指定索引的歌曲
-        function playSong(index) {
-            if (index === currentSongIndex && !audioPlayer.paused) {
-                // 如果點擊的是當前播放歌曲，暫停播放
-                audioPlayer.pause();
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-                return;
-            }
-            
-            currentSongIndex = index;
-            const song = songsData[index];
-            
-            // 更新音頻源
-            audioPlayer.src = song.url;
-            
-            // 更新封面和標題
-            coverImage.src = song.image;
-            currentSongTitle.textContent = song.title;
-            
-            // 更新歌詞
-            displayLyrics(song.lyrics);
-            
-            // 播放音頻
-            audioPlayer.play()
-                .then(() => {
-                    // 播放成功
-                    console.log('播放成功');
-                })
-                .catch(error => {
-                    // 播放失敗，可能是因為用戶還沒有與頁面互動
-                    console.error('播放失敗:', error);
-                    alert('請先點擊頁面，然後再嘗試播放。');
-                });
-            
-            // 更新播放按鈕狀態
-            playIcon.classList.add('hidden');
-            pauseIcon.classList.remove('hidden');
-            
-            // 更新歌曲列表，高亮當前播放的歌曲
-            renderSongList();
-        }
-        
-        // 顯示歌詞
-        function displayLyrics(lyrics) {
-            lyricsSection.innerHTML = '';
-            
-            // 按行分割歌詞
-            const lines = lyrics.split('\n');
-            
-            lines.forEach(line => {
-                if (line.trim()) {
-                    const lyricLine = document.createElement('div');
-                    lyricLine.className = 'lyric-line';
-                    lyricLine.textContent = line;
-                    lyricsSection.appendChild(lyricLine);
-                } else {
-                    // 對於空行，添加更大的間距
-                    const spacer = document.createElement('div');
-                    spacer.style.height = '15px';
-                    lyricsSection.appendChild(spacer);
-                }
-            });
-        }
-        
-        // 播放/暫停控制
-        playBtn.addEventListener('click', () => {
-            if (currentSongIndex === -1) {
-                // 如果尚未選擇歌曲，播放第一首
-                playSong(0);
-            } else if (audioPlayer.paused) {
-                audioPlayer.play()
-                    .then(() => {
-                        // 播放成功
-                        playIcon.classList.add('hidden');
-                        pauseIcon.classList.remove('hidden');
-                    })
-                    .catch(error => {
-                        // 播放失敗
-                        console.error('播放失敗:', error);
-                        alert('請先點擊頁面，然後再嘗試播放。');
-                    });
-            } else {
-                audioPlayer.pause();
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
-        });
-        
-        // 前進/後退控制
-        backwardBtn.addEventListener('click', () => {
-            if (currentSongIndex > 0) {
-                playSong(currentSongIndex - 1);
-            } else {
-                // 如果是第一首，則播放最後一首
-                playSong(songsData.length - 1);
-            }
-        });
-        
-        forwardBtn.addEventListener('click', () => {
-            if (currentSongIndex < songsData.length - 1) {
-                playSong(currentSongIndex + 1);
-            } else {
-                // 如果是最後一首，則播放第一首
-                playSong(0);
-            }
-        });
-        
-        // 更新進度條
-        audioPlayer.addEventListener('timeupdate', () => {
-            if (!isNaN(audioPlayer.duration)) {
-                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-                progressBar.style.width = `${progress}%`;
-                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-            }
-        });
-        
-        // 加載歌曲持續時間
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            durationDisplay.textContent = formatTime(audioPlayer.duration);
-        });
-        
-           
-        // 格式化時間
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = Math.floor(seconds % 60);
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-        
-        // 點擊進度條跳轉
-        progressContainer.addEventListener('click', (e) => {
-            if (currentSongIndex === -1) return; // 如果沒有正在播放的歌曲，不做任何操作
-            
-            const rect = progressContainer.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            audioPlayer.currentTime = pos * audioPlayer.duration;
-        });
+    } else {
+        audioPlayer.pause();
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+    }
+});
 
-        // 播放列表顯示/隱藏
-        playlistBtn.addEventListener('click', function(e) {
-            e.stopPropagation(); // 防止點擊事件擴散到文檔
-            songList.classList.toggle('visible'); // 切換顯示/隱藏歌曲列表
-            console.log('播放列表按鈕被點擊，當前可見狀態:', songList.classList.contains('visible'));
-        });
+// 前進/後退控制
+backwardBtn.addEventListener('click', () => {
+    if (currentSongIndex > 0) {
+        playSong(currentSongIndex - 1);
+    } else {
+        // 如果是第一首，則播放最後一首
+        playSong(songsData.length - 1);
+    }
+});
 
-        // 點擊歌曲列表本身不會關閉它
-        songList.addEventListener('click', function(e) {
-            e.stopPropagation(); // 防止點擊事件擴散到文檔
-        });
+forwardBtn.addEventListener('click', () => {
+    if (currentSongIndex < songsData.length - 1) {
+        playSong(currentSongIndex + 1);
+    } else {
+        // 如果是最後一首，則播放第一首
+        playSong(0);
+    }
+});
 
-        // 點擊其他地方會關閉歌曲列表
-        document.addEventListener('click', function() {
-            songList.classList.remove('visible'); // 隱藏歌曲列表
-        });
-        
-        // 音頻錯誤處理
-        audioPlayer.addEventListener('error', (e) => {
-            console.error('音頻播放錯誤:', e);
-            alert('音頻播放錯誤，請稍後再試。');
-        });
-        
-        // 初始化
-        renderSongList();
-        
-        // 載入預設歌曲（第一首）但不播放
+// 更新進度條
+audioPlayer.addEventListener('timeupdate', () => {
+    if (!isNaN(audioPlayer.duration)) {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressBar.style.width = `${progress}%`;
+        currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+    }
+});
+
+// 加載歌曲持續時間
+audioPlayer.addEventListener('loadedmetadata', () => {
+    durationDisplay.textContent = formatTime(audioPlayer.duration);
+});
+
+// 格式化時間
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// 點擊進度條跳轉
+progressContainer.addEventListener('click', (e) => {
+    if (currentSongIndex === -1) return; // 如果沒有正在播放的歌曲，不做任何操作
+    
+    const rect = progressContainer.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    audioPlayer.currentTime = pos * audioPlayer.duration;
+});
+
+// 播放列表顯示/隱藏
+playlistBtn.addEventListener('click', function(e) {
+    e.stopPropagation(); // 防止點擊事件擴散到文檔
+    songList.classList.toggle('visible'); // 切換顯示/隱藏歌曲列表
+    console.log('播放列表按鈕被點擊，當前可見狀態:', songList.classList.contains('visible'));
+});
+
+// 點擊歌曲列表本身不會關閉它
+songList.addEventListener('click', function(e) {
+    e.stopPropagation(); // 防止點擊事件擴散到文檔
+});
+
+// 點擊其他地方會關閉歌曲列表
+document.addEventListener('click', function() {
+    songList.classList.remove('visible'); // 隱藏歌曲列表
+});
+
+// 音頻錯誤處理
+audioPlayer.addEventListener('error', (e) => {
+    console.error('音頻播放錯誤:', e);
+    alert('音頻播放錯誤，請稍後再試。');
+});
+
+// 初始化
+renderSongList();
+
+// 載入預設歌曲（第一首）但不播放
 function loadDefaultSong() {
     if (songsData.length > 0) {
         currentSongIndex = 0;
@@ -1038,7 +1057,7 @@ function loadDefaultSong() {
         
         // 更新封面和標題
         coverImage.src = song.image;
-        currentSongTitle.textContent = song.title;
+        currentSongTitle.innerHTML = `<span class="now-playing-indicator"></span> ${song.title}`;
         
         // 更新歌詞
         displayLyrics(song.lyrics);
@@ -1048,81 +1067,79 @@ function loadDefaultSong() {
         
         // 更新歌曲列表，高亮當前選擇的歌曲
         renderSongList();
-        
-
     }
 }
-        
-        // 頁面加載完成後載入預設歌曲
-        window.addEventListener('load', loadDefaultSong);
-        
-        // 調整歌詞區域的高度以確保在小螢幕上可見
-        function adjustLyricsSectionHeight() {
-            const viewportHeight = window.innerHeight;
-            const headerHeight = document.querySelector('.header').offsetHeight;
-            const playerHeight = document.querySelector('.backdrop-blur-xl').offsetHeight - lyricsSection.offsetHeight;
-            const padding = 40; // 額外的padding
-            
-            const maxHeight = viewportHeight - headerHeight - playerHeight - padding;
-            lyricsSection.style.maxHeight = `${maxHeight}px`;
+
+// 頁面加載完成後載入預設歌曲
+window.addEventListener('load', loadDefaultSong);
+
+// 調整歌詞區域的高度以確保在小螢幕上可見
+function adjustLyricsSectionHeight() {
+    const viewportHeight = window.innerHeight;
+    const headerHeight = document.querySelector('.header').offsetHeight;
+    const playerControlsHeight = 200; // 估計播放控制區域的高度
+    const padding = 80; // 增加更多的padding給歌詞區域
+    
+    const maxHeight = Math.max(300, viewportHeight - headerHeight - playerControlsHeight - padding);
+    lyricsSection.style.maxHeight = `${maxHeight}px`;
+}
+
+// 頁面加載和調整大小時調整歌詞區域高度
+window.addEventListener('load', adjustLyricsSectionHeight);
+window.addEventListener('resize', adjustLyricsSectionHeight);
+
+// 檢查是否支持媒體會話API，如果支持則使用它來控制媒體
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', function() {
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
         }
-        
-        // 頁面加載和調整大小時調整歌詞區域高度
-        window.addEventListener('load', adjustLyricsSectionHeight);
-        window.addEventListener('resize', adjustLyricsSectionHeight);
-        
-        // 檢查是否支持媒體會話API，如果支持則使用它來控制媒體
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.setActionHandler('play', function() {
-                if (audioPlayer.paused) {
-                    audioPlayer.play();
-                    playIcon.classList.add('hidden');
-                    pauseIcon.classList.remove('hidden');
-                }
-            });
-            
-            navigator.mediaSession.setActionHandler('pause', function() {
-                if (!audioPlayer.paused) {
-                    audioPlayer.pause();
-                    playIcon.classList.remove('hidden');
-                    pauseIcon.classList.add('hidden');
-                }
-            });
-            
-            navigator.mediaSession.setActionHandler('previoustrack', function() {
-                if (currentSongIndex > 0) {
-                    playSong(currentSongIndex - 1);
-                } else {
-                    playSong(songsData.length - 1);
-                }
-            });
-            
-            navigator.mediaSession.setActionHandler('nexttrack', function() {
-                if (currentSongIndex < songsData.length - 1) {
-                    playSong(currentSongIndex + 1);
-                } else {
-                    playSong(0);
-                }
-            });
+    });
+    
+    navigator.mediaSession.setActionHandler('pause', function() {
+        if (!audioPlayer.paused) {
+            audioPlayer.pause();
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
         }
-        
-        // 防止在移動設備上點擊按鈕時出現延遲
-        const buttons = document.querySelectorAll('button');
-        buttons.forEach(button => {
-            button.addEventListener('touchstart', function() {}, {passive: true});
-        });
-        
-        // 添加鍵盤快捷鍵支持
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') { // 空格鍵暫停/播放
-                e.preventDefault();
-                playBtn.click();
-            } else if (e.code === 'ArrowLeft') { // 左箭頭鍵上一首
-                backwardBtn.click();
-            } else if (e.code === 'ArrowRight') { // 右箭頭鍵下一首
-                forwardBtn.click();
-            }
-        });
-    </script>
+    });
+    
+    navigator.mediaSession.setActionHandler('previoustrack', function() {
+        if (currentSongIndex > 0) {
+            playSong(currentSongIndex - 1);
+        } else {
+            playSong(songsData.length - 1);
+        }
+    });
+    
+    navigator.mediaSession.setActionHandler('nexttrack', function() {
+        if (currentSongIndex < songsData.length - 1) {
+            playSong(currentSongIndex + 1);
+        } else {
+            playSong(0);
+        }
+    });
+}
+
+// 防止在移動設備上點擊按鈕時出現延遲
+const buttons = document.querySelectorAll('button');
+buttons.forEach(button => {
+    button.addEventListener('touchstart', function() {}, {passive: true});
+});
+
+// 添加鍵盤快捷鍵支持
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { // 空格鍵暫停/播放
+        e.preventDefault();
+        playBtn.click();
+    } else if (e.code === 'ArrowLeft') { // 左箭頭鍵上一首
+        backwardBtn.click();
+    } else if (e.code === 'ArrowRight') { // 右箭頭鍵下一首
+        forwardBtn.click();
+    }
+});
+</script>
 </body>
 </html>
