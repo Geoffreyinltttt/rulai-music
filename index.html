@@ -275,7 +275,7 @@
                     <div>
                         <span class="text-sm font-medium text-blue-600">感恩 師父 讚歎 師父</span>
                         <h1 id="currentSongTitle" class="text-3xl font-bold mt-1 mb-2 text-white">選擇一首歌曲開始播放</h1>
-                    </div>
+                    </div>	
 
                     <!-- Audio Player -->
                     <audio class="hidden" id="audioPlayer">
@@ -901,6 +901,7 @@ function playSong(index) {
     // 更新封面和標題
     coverImage.src = song.image;
     currentSongTitle.innerHTML = `<span class="now-playing-indicator"></span> ${song.title}`;
+    currentSongTitle.style.display = 'block'; // 確保標題是可見的
     
     // 更新歌詞
     displayLyrics(song.lyrics);
@@ -910,16 +911,15 @@ function playSong(index) {
         .then(() => {
             // 播放成功
             console.log('播放成功');
+            // 確保播放按鈕狀態正確
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
         })
         .catch(error => {
             // 播放失敗，可能是因為用戶還沒有與頁面互動
             console.error('播放失敗:', error);
             alert('請先點擊頁面，然後再嘗試播放。');
         });
-    
-    // 更新播放按鈕狀態
-    playIcon.classList.add('hidden');
-    pauseIcon.classList.remove('hidden');
     
     // 更新歌曲列表，高亮當前播放的歌曲
     renderSongList();
@@ -947,6 +947,19 @@ function displayLyrics(lyrics) {
     });
 }
 
+// 新增一個歌曲切換函數，用於前進和後退按鈕
+function changeSong(direction) {
+    let newIndex;
+    if (direction === 'next') {
+        newIndex = currentSongIndex < songsData.length - 1 ? currentSongIndex + 1 : 0;
+    } else {
+        newIndex = currentSongIndex > 0 ? currentSongIndex - 1 : songsData.length - 1;
+    }
+    
+    // 直接調用現有的播放歌曲函數
+    playSong(newIndex);
+}
+
 // 播放/暫停控制
 playBtn.addEventListener('click', () => {
     if (currentSongIndex === -1) {
@@ -971,23 +984,13 @@ playBtn.addEventListener('click', () => {
     }
 });
 
-// 前進/後退控制
+// 前進/後退控制 - 使用新的changeSong函數
 backwardBtn.addEventListener('click', () => {
-    if (currentSongIndex > 0) {
-        playSong(currentSongIndex - 1);
-    } else {
-        // 如果是第一首，則播放最後一首
-        playSong(songsData.length - 1);
-    }
+    changeSong('prev');
 });
 
 forwardBtn.addEventListener('click', () => {
-    if (currentSongIndex < songsData.length - 1) {
-        playSong(currentSongIndex + 1);
-    } else {
-        // 如果是最後一首，則播放第一首
-        playSong(0);
-    }
+    changeSong('next');
 });
 
 // 更新進度條
@@ -1043,6 +1046,11 @@ audioPlayer.addEventListener('error', (e) => {
     alert('音頻播放錯誤，請稍後再試。');
 });
 
+// 音頻播放結束後自動播放下一首
+audioPlayer.addEventListener('ended', () => {
+    changeSong('next');
+});
+
 // 初始化
 renderSongList();
 
@@ -1057,7 +1065,7 @@ function loadDefaultSong() {
         
         // 更新封面和標題
         coverImage.src = song.image;
-        currentSongTitle.innerHTML = `<span class="now-playing-indicator"></span> ${song.title}`;
+        currentSongTitle.innerHTML = `${song.title}`;
         
         // 更新歌詞
         displayLyrics(song.lyrics);
@@ -1107,18 +1115,25 @@ if ('mediaSession' in navigator) {
     });
     
     navigator.mediaSession.setActionHandler('previoustrack', function() {
-        if (currentSongIndex > 0) {
-            playSong(currentSongIndex - 1);
-        } else {
-            playSong(songsData.length - 1);
-        }
+        changeSong('prev');
     });
     
     navigator.mediaSession.setActionHandler('nexttrack', function() {
-        if (currentSongIndex < songsData.length - 1) {
-            playSong(currentSongIndex + 1);
-        } else {
-            playSong(0);
+        changeSong('next');
+    });
+    
+    // 更新媒體會話元數據
+    audioPlayer.addEventListener('play', function() {
+        if (currentSongIndex >= 0) {
+            const song = songsData[currentSongIndex];
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: song.title,
+                artist: '佛曲',
+                album: '佛曲播放器',
+                artwork: [
+                    { src: song.image, sizes: '512x512', type: 'image/jpeg' }
+                ]
+            });
         }
     });
 }
